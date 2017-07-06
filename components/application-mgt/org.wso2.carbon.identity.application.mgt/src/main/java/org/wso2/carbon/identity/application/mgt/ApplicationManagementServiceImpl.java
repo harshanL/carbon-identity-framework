@@ -675,16 +675,18 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
 
         ApplicationDAO appDAO = ApplicationMgtSystemConfig.getInstance().getApplicationDAO();
         name = appDAO.getServiceProviderNameByClientId(clientId, clientType, tenantDomain);
-
+        log.info("Service provider name in DB : " + name);
         if (name == null) {
             name = new FileBasedApplicationDAO().getServiceProviderNameByClientId(clientId,
                                                                                   clientType, tenantDomain);
+            log.info("Service provider name in file-sys : " + name);
         }
 
         if (name == null) {
             ServiceProvider defaultSP = ApplicationManagementServiceComponent.getFileBasedSPs()
                     .get(IdentityApplicationConstants.DEFAULT_SP_CONFIG);
             name = defaultSP.getApplicationName();
+            log.info("Service provider name in default-sp : " + name);
         }
 
         for (ApplicationMgtListener listener : listeners) {
@@ -814,7 +816,6 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
         ServiceProvider serviceProvider = null;
 
         serviceProviderName = getServiceProviderNameByClientId(clientId, clientType, tenantDomain);
-
         try {
             startTenantFlow(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
 
@@ -837,6 +838,8 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
             serviceProvider = appDAO.getApplication(serviceProviderName, tenantDomain);
 
             if (serviceProvider != null) {
+                log.info("ServiceProvider name : " + serviceProvider.getApplicationName());
+
                 // if "Authentication Type" is "Default" we must get the steps from the default SP
                 AuthenticationStep[] authenticationSteps = serviceProvider
                         .getLocalAndOutBoundAuthenticationConfig().getAuthenticationSteps();
@@ -860,8 +863,16 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
                 serviceProviderName)) {
             serviceProvider = ApplicationManagementServiceComponent.getFileBasedSPs().get(
                     serviceProviderName);
+            log.info("ServiceProvider is not in DB and getting from file : " + serviceProvider.getApplicationName());
         }
 
+        if (serviceProvider.getClaimConfig() != null) {
+            for (org.wso2.carbon.identity.application.common.model.ClaimMapping claimMapping : serviceProvider.getClaimConfig().getClaimMappings()) {
+                log.info("Claim mapping local claim : " + claimMapping.getLocalClaim().getClaimUri());
+                log.info("Claim mapping remote claim : " + claimMapping.getRemoteClaim().getClaimUri());
+                log.info("Claim mapping isRequested : " + claimMapping.isRequested());
+            }
+        }
         endTenantFlow();
 
         try {

@@ -17,6 +17,8 @@
  */
 package org.wso2.carbon.identity.application.authentication.framework.config.model;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.common.model.ApplicationPermission;
 import org.wso2.carbon.identity.application.common.model.ClaimConfig;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
@@ -34,6 +36,8 @@ public class ApplicationConfig implements Serializable {
     private static final long serialVersionUID = 8082478632322393384L;
 
     private ServiceProvider serviceProvider = null;
+
+    public static final Log log = LogFactory.getLog(ApplicationConfig.class);
 
     private int applicationID = 0;
     private String applicationName = null;
@@ -70,8 +74,9 @@ public class ApplicationConfig implements Serializable {
         ClaimConfig claimConfig = application.getClaimConfig();
         if (claimConfig != null) {
             roleClaim = claimConfig.getRoleClaimURI();
+            log.info(" Role Claim URI : " + roleClaim);
             alwaysSendMappedLocalSubjectId = claimConfig.isAlwaysSendMappedLocalSubjectId();
-
+            log.info(" alwaysSendMappedLocalSubjectId : " + alwaysSendMappedLocalSubjectId);
             ClaimMapping[] claimMapping = claimConfig.getClaimMappings();
 
             requestedClaims = new HashMap<String, String>();
@@ -80,6 +85,10 @@ public class ApplicationConfig implements Serializable {
             if (claimMapping != null && claimMapping.length > 0) {
                 claimMappings = new HashMap<String, String>();
                 for (ClaimMapping claim : claimMapping) {
+                    log.info("ClaimMapping claim default value: " + claim.getDefaultValue());
+                    log.info("ClaimMapping claim local claim: " + claim.getLocalClaim());
+                    log.info("ClaimMapping claim remote claim: " + claim.getRemoteClaim());
+                    log.info("ClaimMapping claim isRequested: " + claim.isRequested());
                     if (claim.getRemoteClaim() != null
                         && claim.getRemoteClaim().getClaimUri() != null) {
                         if (claim.getLocalClaim() != null) {
